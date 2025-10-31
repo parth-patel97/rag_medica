@@ -1,5 +1,5 @@
 # rag_medica
-=======
+
 # 📘 Medicare RAG-Based PDF Retrieval System
 
 This project implements a **Retrieval-Augmented Generation (RAG)** pipeline to answer user questions based on the official Medicare PDF document. The system uses a dynamic chunking strategy, vector search via FAISS, and a local open-source LLM (e.g., LLaMA 2 via Ollama) to return structured and context-aware answers.
