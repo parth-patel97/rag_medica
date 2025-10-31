@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # rag_medica
 =======
 # 📘 Medicare RAG-Based PDF Retrieval System
@@ -161,6 +160,3 @@ Used document:
 - [Medicare & You 2024 PDF](https://www.medicare.gov/Pubs/pdf/10050-medicare-and-you.pdf)
 
 Place the file in the root as: `10050-medicare-and-you.pdf`
-
----
->>>>>>> 0bc6d2f (Initial commit)
