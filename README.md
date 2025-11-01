@@ -12,6 +12,7 @@ This project implements a **Retrieval-Augmented Generation (RAG)** pipeline to a
 - ✅ FAISS-based dense retrieval using `sentence-transformers`
 - ✅ Open-source LLM integration via [Ollama](https://ollama.com/)
 - ✅ FastAPI-powered query endpoint
+- ✅ Query endpoint
 - ✅ Structured JSON output with source tracking
 
 ---
@@ -121,13 +122,9 @@ python app/build_index.py
 
 ---
 
-## 🚦 Start the FastAPI Server
+## 🚦 Start the server
 
-```bash
-uvicorn app.main:app --reload
-```
-
-Go to: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) to access Swagger UI and test the `/query` endpoint.
+Check `app/main.py` for the project's server entrypoint and start instructions. (This repo no longer prescribes a specific ASGI server.)
 
 ---
 
@@ -163,7 +160,6 @@ Returns:
 ## 🛠 Tech Stack
 
 - **Language**: Python
-- **Framework**: FastAPI
 - **LLM**: LLaMA 2 via Ollama
 - **Embeddings**: SentenceTransformers (`all-MiniLM-L6-v2`)
 - **Vector DB**: FAISS

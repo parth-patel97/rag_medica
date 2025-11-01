@@ -3,14 +3,7 @@ PyMuPDF
 chromadb
 sentence_transformers
 
-# LangChain and Google Gemini (Gemini/Generative AI) integration
+# LangChain and Google Gemini (Generative AI) integration
 langchain>=0.0.228
 google-generative-ai
 google-auth
-
-# FastAPI / server
-fastapi
-uvicorn[standard]
-
-# Vector store / FAISS (CPU build)
-faiss-cpu
