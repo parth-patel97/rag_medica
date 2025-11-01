@@ -1,41 +1,44 @@
-import faiss
-import pickle
-from sentence_transformers import SentenceTransformer
+# app/retrieval.py
+import os
+from typing import List
+from langchain_chroma.vectorstores import Chroma
+from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from app.logging import get_logger
 
 logger = get_logger()
-embed_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-try:
-    index = faiss.read_index("models/faiss.idx")
-    with open("models/meta.pkl", "rb") as f:
-        metadata = pickle.load(f)
-    logger.info("✅ FAISS index and metadata loaded.")
-except Exception as e:
-    logger.exception("❌ Error loading FAISS index or metadata.")
+_CHROMA_PERSIST_DIR = os.path.abspath(os.environ.get("CHROMA_PERSIST_DIR", "models/chroma"))
+_COLLECTION_NAME = os.environ.get("CHROMA_COLLECTION_NAME", "collection_sample")
+_EMBED_MODEL = os.environ.get("SENTENCE_TRANSFORMER_MODEL", "all-MiniLM-L6-v2")
 
-def retrieve(query, top_k=5):
-    """
-    Retrieve top-k relevant chunks for a given query.
+_embeddings = HuggingFaceEmbeddings(model_name=_EMBED_MODEL)
 
-    Args:
-        query (str): User query.
-        top_k (int): Number of chunks to return.
-
-    Returns:
-        List[dict]: Top-k matched chunks with metadata and similarity scores.
-    """
+def _load_vectorstore(persist_directory: str = _CHROMA_PERSIST_DIR, collection_name: str = _COLLECTION_NAME):
     try:
-        q_emb = embed_model.encode([query])
-        faiss.normalize_L2(q_emb)
-        D, I = index.search(q_emb, top_k * 3)
+        vect = Chroma(persist_directory=persist_directory, collection_name=collection_name, embedding_function=_embeddings)
+        logger.info("✅ Chroma vectorstore loaded via LangChain.")
+        return vect
+    except Exception:
+        logger.exception("❌ Failed to load Chroma vectorstore")
+        raise
 
-        hits = [{"id": i, "score": float(D[0][j]), **metadata[i]} for j, i in enumerate(I[0])]
-        top_hits = hits[:top_k]
+def _format_hit(doc, score, idx):
+    meta = doc.metadata or {}
+    return {
+        "id": meta.get("id", idx),
+        "score": float(score),
+        "text": doc.page_content,
+        "page": meta.get("page"),
+        "size": meta.get("size"),
+    }
 
+def retrieve(query: str, top_k: int = 5) -> List[dict]:
+    try:
+        vect = _load_vectorstore()
+        docs_and_scores = vect.similarity_search_with_score(query, k=top_k)
+        hits = [_format_hit(doc, score, i) for i, (doc, score) in enumerate(docs_and_scores)]
         logger.info(f"✅ Retrieved top-{top_k} chunks for query: {query}")
-        return top_hits
-
-    except Exception as e:
+        return hits
+    except Exception:
         logger.exception(f"❌ Retrieval failed for query: {query}")
         return []

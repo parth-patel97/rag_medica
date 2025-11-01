@@ -1,32 +1,25 @@
-import faiss
-import pickle
-from sentence_transformers import SentenceTransformer
+# app/embeddings.py
+import os
+from typing import List
+from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from app.logging import get_logger
 
 logger = get_logger()
-model = SentenceTransformer("all-MiniLM-L6-v2")
+_MODEL = os.environ.get("SENTENCE_TRANSFORMER_MODEL", "all-MiniLM-L6-v2")
 
-def build_index(chunks, index_path="models/faiss.idx", meta_path="models/meta.pkl"):
-    """
-    Builds FAISS index and saves metadata.
+_embeddings = HuggingFaceEmbeddings(model_name=_MODEL)
 
-    Args:
-        chunks (List[dict]): List of chunks with text, page, and size.
-        index_path (str): Filepath to save FAISS index.
-        meta_path (str): Filepath to save chunk metadata.
-    """
+def get_embeddings(texts: List[str]):
+    """Return a list of embeddings for the provided texts."""
     try:
-        embeddings = model.encode([c["text"] for c in chunks], show_progress_bar=True)
-        dim = embeddings.shape[1]
-        index = faiss.IndexFlatIP(dim)
-        faiss.normalize_L2(embeddings)
-        index.add(embeddings)
-        faiss.write_index(index, index_path)
+        return _embeddings.embed_documents(texts)
+    except Exception:
+        logger.exception("Failed to compute embeddings")
+        raise
 
-        with open(meta_path, "wb") as f:
-            pickle.dump(chunks, f)
-
-        logger.info(f"✅ FAISS index and metadata saved. Total chunks: {len(chunks)}")
-
-    except Exception as e:
-        logger.exception(f"❌ Failed to build FAISS index: {e}")
+def get_embedding(text: str):
+    try:
+        return _embeddings.embed_query(text)
+    except Exception:
+        logger.exception("Failed to compute embedding")
+        raise

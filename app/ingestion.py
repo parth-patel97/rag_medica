@@ -10,27 +10,20 @@ embed_model = SentenceTransformer("all-MiniLM-L6-v2")
 def dynamic_chunk_text_with_variance(pdf_path, target_tokens=512, overlap_pct=0.2):
     """
     Chunk a PDF document into dynamically sized chunks based on local embedding variance.
-
-    Args:
-        pdf_path (str): Path to the PDF file.
-        target_tokens (int): Average target chunk size in tokens.
-        overlap_pct (float): Overlap percentage between consecutive chunks.
-
-    Returns:
-        List[dict]: A list of chunk dictionaries with page, text, and token size.
     """
     chunks = []
 
     try:
         doc = fitz.open(pdf_path)
-        tokenizer = embed_model.tokenizer
+        # try to use tokenizer if present, fallback to a simple heuristic
+        tokenizer = getattr(embed_model, "tokenizer", None)
 
         for page_num, page in enumerate(doc, start=1):
             text = page.get_text().strip()
             if not text:
                 continue
 
-            sentences = text.split(". ")
+            sentences = [s.strip() for s in text.split(". ") if s.strip()]
             if len(sentences) < 2:
                 logger.warning(f"Skipping page {page_num}: too few sentences.")
                 continue
@@ -60,13 +53,22 @@ def dynamic_chunk_text_with_variance(pdf_path, target_tokens=512, overlap_pct=0.
                 chunk_text = ". ".join(chunk_sents).strip()
 
                 if chunk_text:
+                    # compute token size if tokenizer available, else approximate by words
+                    try:
+                        if tokenizer:
+                            size = len(tokenizer.tokenize(chunk_text))
+                        else:
+                            size = len(chunk_text.split())
+                    except Exception:
+                        size = len(chunk_text.split())
+
                     chunks.append({
                         "page": page_num,
                         "text": chunk_text,
-                        "size": len(tokenizer.tokenize(chunk_text))
+                        "size": int(size)
                     })
 
-                i += window - int(overlap_pct * window)
+                i += max(1, window - int(overlap_pct * window))
 
         logger.info(f"✅ Created {len(chunks)} chunks from {pdf_path}")
         return chunks
@@ -74,24 +76,3 @@ def dynamic_chunk_text_with_variance(pdf_path, target_tokens=512, overlap_pct=0.
     except Exception as e:
         logger.exception(f"❌ Error while processing PDF: {e}")
         return []
-
-
-# def split_on_coherence(sentences, embeddings, sim_threshold=0.7):
-#     """
-#     Break a list of sentences whenever adjacent similarity < threshold.
-#     """
-#     boundaries = [0]
-#     for i in range(len(embeddings) - 1):
-#         sim = cosine_similarity(
-#             embeddings[i].reshape(1, -1),
-#             embeddings[i+1].reshape(1, -1)
-#         )[0,0]
-#         if sim < sim_threshold:
-#             boundaries.append(i+1)
-#     boundaries.append(len(sentences))
-
-#     chunks = []
-#     for b_start, b_end in zip(boundaries[:-1], boundaries[1:]):
-#         chunk = ". ".join(sentences[b_start:b_end]).strip()
-#         chunks.append(chunk)
-#     return chunks

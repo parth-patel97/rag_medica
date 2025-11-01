@@ -83,9 +83,27 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Run Ollama with LLaMA2
+### 4. Environment variables (Google Gemini / local LLM)
 
-Ensure Ollama is installed and running locally:
+The project can use either a local LLM (via Ollama) or Google Gemini (via the Generative AI API). Set these environment variables before running the app.
+
+- `GEMINI_API_KEY` — (optional) API key for Google Gemini / Generative AI. The code reads `GEMINI_API_KEY` at runtime. If you prefer a different name, update `app/generation.py` accordingly.
+- `GOOGLE_GENAI_MODEL` — (optional) model name to use (default: `gemini-2.5-flash`).
+- `GOOGLE_GENAI_TIMEOUT` — (optional) request timeout in seconds (default: `60`).
+
+Set environment variables on macOS / Linux like:
+
+```bash
+export GEMINI_API_KEY="your_gemini_api_key_here"
+export GOOGLE_GENAI_MODEL="gemini-2.5-flash"
+export GOOGLE_GENAI_TIMEOUT=60
+```
+
+If you do not set `GEMINI_API_KEY`, the app will attempt to use the local LLM flow (Ollama) if available.
+
+### 5. Run Ollama with LLaMA2 (optional local LLM)
+
+Ensure Ollama is installed and running locally if you want to use a local model instead of Google Gemini:
 
 ```bash
 ollama run llama2
