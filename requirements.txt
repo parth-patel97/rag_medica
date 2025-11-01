@@ -7,3 +7,8 @@ sentence_transformers
 langchain>=0.0.228
 google-generative-ai
 google-auth
+langchain-core>=1.0.1
+langchain-huggingface
+langchain-chroma
+langchain-community
+langchain-google-genai

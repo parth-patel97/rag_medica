@@ -11,7 +11,6 @@ This project implements a **Retrieval-Augmented Generation (RAG)** pipeline to a
 - ✅ Dynamic chunking using semantic variance
 - ✅ FAISS-based dense retrieval using `sentence-transformers`
 - ✅ Open-source LLM integration via [Ollama](https://ollama.com/)
-- ✅ FastAPI-powered query endpoint
 - ✅ Query endpoint
 - ✅ Structured JSON output with source tracking
 
@@ -46,7 +45,7 @@ This project implements a **Retrieval-Augmented Generation (RAG)** pipeline to a
 rag_medica/
 │
 ├── app/
-│   ├── main.py               # FastAPI server
+│   ├── main.py               # server entrypoint
 │   ├── ingestion.py          # PDF chunking with semantic logic
 │   ├── retrieval.py          # FAISS-based top-k retriever
 │   ├── embeddings.py         # Index builder using SentenceTransformer
